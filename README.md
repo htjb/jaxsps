@@ -1,0 +1,1 @@
+initial_mass ──► (Teff, logg, [Fe/H]) from MIST ──► spectrum from MILES
