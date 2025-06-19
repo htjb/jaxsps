@@ -1,8 +1,9 @@
 from collections import namedtuple
 import jax.numpy as jnp
+import glob
 
 
-def read_isochrones(file_path: str) -> namedtuple:
+def read_individual_isochrones(file_path: str) -> namedtuple:
     """
     Reads isochrone data from a .iso file and returns it as a pandas DataFrame.
 
@@ -22,10 +23,22 @@ def read_isochrones(file_path: str) -> namedtuple:
         for line in lines[11:]:
             if line.strip() and line[0] != '#':
                 values = line.split(' ')
-                values = [float(val) for val in values if val.strip()]
+                values = [val for val in values if val.strip()]
                 data.append(values)
-    data = jnp.array(data)
+    data = jnp.array(data, dtype=jnp.float64)
     Isochrone = namedtuple('Isochrone', columns)
     isochrones = Isochrone(*data.T)
     return isochrones
         
+def read_collection_of_isochrones(file_path: str) -> namedtuple:
+
+    isochrone_files = glob.glob(file_path + '/*.iso')
+    isochrone_files = [f for f in isochrone_files if 'feh_m' in f]
+    isochrones = namedtuple('Isochrones', ['metalicity', 'isochrone'])
+    isochrones_list = []
+    for file in isochrone_files:
+        isochrone = read_individual_isochrones(file)
+        metalicity = float(file.split('feh_m')[1].split('_')[0])
+        isochrones_list.append((metalicity, isochrone))
+    isochrones = isochrones(*zip(*isochrones_list))
+    return isochrones
