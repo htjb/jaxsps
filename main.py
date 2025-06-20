@@ -1,18 +1,18 @@
-from jaxsps.isochrones import read_collection_of_isochrones
-import pandas as pd
+from jaxsps.ssp_model import ssp
+from jaxsps.spectra import read_collection_of_spectra
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
 
-iso = read_collection_of_isochrones('data/MIST_v1.2_vvcrit0.4_full_isos/')
+metalicity = -0.25
+age = 5.0
 
-metalicity = 2.5
-age = 9.0
-isochrone = iso.isochrone[iso.metalicity == metalicity]
-idx = (isochrone.log10_isochrone_age_yr == age)
-plt.plot(isochrone.log_L[idx], isochrone.log_Teff[idx], 
-         label=f'Metallicity: {metalicity} Zsun',
-         marker='o', markersize=0.5)
-plt.xlabel('Log Luminosity (L/Lsun)')
-plt.ylabel('Log Effective Temperature (Teff)')
-plt.title(f'Isochrone at Age {age} Gyr')
+spectra = read_collection_of_spectra('data/MILES_library_v9.1_ASCII/')
+
+spectra, lam = ssp(metalicity, age)
+print(spectra)
+
+plt.plot(lam, spectra)
+plt.loglog()
 plt.show()
+
