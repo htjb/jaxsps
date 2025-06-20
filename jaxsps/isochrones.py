@@ -25,7 +25,7 @@ def read_individual_isochrones(file_path: str) -> namedtuple:
                 values = line.split(' ')
                 values = [val for val in values if val.strip()]
                 data.append(values)
-    data = jnp.array(data, dtype=jnp.float64)
+    data = jnp.array(data, dtype=jnp.float32)
     Isochrone = namedtuple('Isochrone', columns)
     isochrones = Isochrone(*data.T)
     return isochrones
@@ -33,12 +33,16 @@ def read_individual_isochrones(file_path: str) -> namedtuple:
 def read_collection_of_isochrones(file_path: str) -> namedtuple:
 
     isochrone_files = glob.glob(file_path + '/*.iso')
-    isochrone_files = [f for f in isochrone_files if 'feh_m' in f]
     isochrones = namedtuple('Isochrones', ['metalicity', 'isochrone'])
     isochrones_list = []
     for file in isochrone_files:
         isochrone = read_individual_isochrones(file)
-        metalicity = float(file.split('feh_m')[1].split('_')[0])
+        # need to check that the _m and _p actually correspond to
+        # positive and minus
+        try:
+            metalicity = float(file.split('feh_m')[1].split('_')[0])
+        except ValueError:
+            metalicity = float(file.split('feh_p')[1].split('_')[0])
         isochrones_list.append((metalicity, isochrone))
     isochrones = isochrones(*zip(*isochrones_list))
     return isochrones
